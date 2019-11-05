@@ -82,6 +82,8 @@ contains
             fstrHEAT%CPtab(IMAT), fstrHEAT%CPtemp(IMAT,:), fstrHEAT%CPfuncA(IMAT,:) ,fstrHEAT%CPfuncB(IMAT,:), &
             fstrHEAT%RHOtab(IMAT), fstrHEAT%RHOtemp(IMAT,:), fstrHEAT%RHOfuncA(IMAT,:), fstrHEAT%RHOfuncB(IMAT,:))
 
+        elseif(ic_type == 541 .or. ic_type == 542 ) then
+
         else
           write(*,*)"** error setMASS"
         endif
