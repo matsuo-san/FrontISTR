@@ -139,7 +139,7 @@ contains
     else if( ipt==3 ) then
       allocate( fval(10,10) )
       fval =0.d0
-      fstr_ctrl_get_ELASTICITY = fstr_ctrl_get_data_ex( ctrl, 1, 'rrrrrrrrrr ',    &
+      fstr_ctrl_get_ELASTICITY = fstr_ctrl_get_data_ex( ctrl, 1, 'RRRRRRRRRR ',    &
         fval(1,:), fval(2,:), fval(3,:), fval(4,:), fval(5,:), fval(6,:),           &
         fval(7,:), fval(8,:), fval(9,:), fval(10,:) )
       if( fstr_ctrl_get_ELASTICITY ==0 ) then
@@ -241,7 +241,7 @@ contains
     else if( ipt==4 ) then    !User
       allocate( fval(10,10) )
       fval =0.0d0
-      fstr_ctrl_get_HYPERELASTIC = fstr_ctrl_get_data_ex( ctrl, 1, 'rrrrrrrrrr ',    &
+      fstr_ctrl_get_HYPERELASTIC = fstr_ctrl_get_data_ex( ctrl, 1, 'RRRRRRRRRR ',    &
         fval(1,:), fval(2,:), fval(3,:), fval(4,:), fval(5,:), fval(6,:),           &
         fval(7,:), fval(8,:), fval(9,:), fval(10,:) )
       if( fstr_ctrl_get_HYPERELASTIC ==0 ) then
@@ -649,11 +649,11 @@ contains
     read_user_matl = -1
 
     fval =0.d0
-    if( fstr_ctrl_get_data_array_ex( ctrl, 1, 'rrrrrrrrrr ', fval(1,:), fval(2,:), fval(3,:),  &
+    if( fstr_ctrl_get_data_array_ex( ctrl, 'RRRRRRRRRR ', fval(1,:), fval(2,:), fval(3,:),  &
       fval(4,:), fval(5,:), fval(6,:), fval(7,:), fval(8,:), fval(9,:), fval(10,:) ) /= 0 ) return
     do i=1,10
       do j=1,10
-        matval((i-1)*10+j)=fval(i,j)
+        matval((i-1)*10+j)=fval(j,i)
       enddo
     enddo
 
