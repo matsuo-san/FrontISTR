@@ -663,6 +663,16 @@ contains
             stop
           endif
         endif
+      else if( header_name == '!DAMAGE' ) then
+        if( cid >0 ) then
+          if( fstr_ctrl_get_USERMATERIAL( ctrl, fstrSOLID%materials(cid)%mtype,   &
+              fstrSOLID%materials(cid)%nlgeom_flag, fstrSOLID%materials(cid)%nfstatus, &
+              fstrSOLID%materials(cid)%variables(101:) )/=0 ) then
+            write(*,*) '### Error: Fail in read in user defined material : ' , cid
+            write(ILOG,*) '### Error: Fail in read in user defined material : ', cid
+            stop
+          endif
+        endif
       else if( header_name == '!USER_MATERIAL' ) then
         if( cid >0 ) then
           if( fstr_ctrl_get_USERMATERIAL( ctrl, fstrSOLID%materials(cid)%mtype,   &
@@ -1041,6 +1051,7 @@ contains
       do j=1,ng
         fstrSOLID%elements(i)%gausses(j)%pMaterial => fstrSOLID%materials(id)
         call fstr_init_gauss( fstrSOLID%elements(i)%gausses( j )  )
+        fstrSOLID%elements(i)%gausses(j)%fstatus(14) = 3.d0
       enddo
 
       nn = hecmw_get_max_node(hecMESH%elem_type(i))
@@ -3471,5 +3482,44 @@ end function fstr_setup_INITIAL
       ! call append_intersection_node_grp( hecMESH, ngrp_id, ngrp_id2 )
     enddo
   end subroutine fstr_convert_contact_type
+
+  !
+  ! tukutta kedo, tsukawanai
+  !
+  subroutine set_element_volume_to_fstat( hecMESH, fstrSOLID )
+
+    implicit none
+
+    type(hecmwST_local_mesh),target :: hecMESH  !< mesh definition
+    type(fstr_solid),target   :: fstrSOLID
+
+    integer :: itype, is, iE, ic_type, icel, LX
+
+    do itype = 1, hecMESH%n_elem_type
+
+      is = hecMESH%elem_type_index(itype-1)+1
+      iE = hecMESH%elem_type_index(itype  )
+      ic_type= hecMESH%elem_type_item(itype)
+      if (hecmw_is_etype_link(ic_type)) cycle
+      if (hecmw_is_etype_patch(ic_type)) cycle
+
+      !element loop
+      !$omp parallel default(none), &
+        !$omp&  private(icel,LX), &
+        !$omp&  shared(iS,iE,fstrSOLID,ic_type)
+      !$omp do
+      do icel = is, iE
+        do LX = 1, NumOfQuadPoints(ic_type)
+          write(*,*) LX, NumOfQuadPoints(ic_type), ic_type, icel
+          write(*,*) fstrSOLID%elements(icel)%gausses(LX)%fstatus(:)
+          fstrSOLID%elements(icel)%gausses(LX)%fstatus(16) = 3.d0
+          call VOLUME_C3(ic_type,NN,XX,YY,ZZ)
+        end do
+      enddo ! icel
+      !$omp end do
+      !$omp end parallel
+    enddo   ! itype
+
+  end subroutine set_element_volume_to_fstat
 
 end module m_fstr_setup
