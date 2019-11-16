@@ -40,12 +40,13 @@ contains
 
   endsubroutine calc_equivalent_strain
   !
-  subroutine calc_damage( matl,epse, damage )
+  subroutine calc_damage( matl,epse,length,damage )
 
     implicit none
 
     real(kind=kreal), intent(in)  :: matl(:)   !< material properties
     real(kind=kreal), intent(in)  :: epse
+    real(kind=kreal), intent(in)  :: length
     real(kind=kreal), intent(out) :: damage
     real(kind=kreal) :: eps0, gf, EE
 
@@ -54,7 +55,7 @@ contains
     if( epse>eps0 ) then
       EE     = matl(1)
       gf     = matl(4)
-      damage = 1.d0-(eps0/epse)*exp(-1.d0*EE*eps0*(epse-eps0)/gf)
+      damage = 1.d0-(eps0/epse)*exp(-1.d0*EE*length*eps0*(epse-eps0)/gf)
       damage = min( damage,0.9999d0 )
     else
       damage = 0.d0
@@ -108,7 +109,7 @@ contains
 
     call calc_elastic_matrix( matl, D )
     call calc_equivalent_strain( matl, strain, fstat(13), epse )
-    call calc_damage( matl,epse,damage )
+    call calc_damage( matl,epse,fstat(16),damage )
 
     D(:,:) = (1.d0-damage)*D(:,:)
 
@@ -154,7 +155,7 @@ contains
     !
     call calc_elastic_matrix( matl, D )
     call calc_equivalent_strain( matl, fstat(1:6), fstat(13), epse )
-    call calc_damage( matl,epse,damage )
+    call calc_damage( matl,epse,fstat(16),damage )
     !
     D(:,:) = (1.d0-damage)*D(:,:)
     !

@@ -1054,7 +1054,7 @@ contains
           !
           ! caluculate volume for Kurumatani damage model
           if( fstrSOLID%materials(id)%mtype ==  USERMATERIAL ) then
-            call set_element_volume_to_fstat_at_gauss( fstrSOLID,hecMESH,i,j )
+            call set_element_length_to_fstat_at_gauss( fstrSOLID,hecMESH,i,j )
           end if
       enddo
 
@@ -3487,7 +3487,10 @@ end function fstr_setup_INITIAL
     enddo
   end subroutine fstr_convert_contact_type
 
-  subroutine set_element_volume_to_fstat_at_gauss( fstrSOLID,hecMESH,icel,ig )
+  !
+  ! https://doi.org/10.11421/jsces.2013.20130015
+  !
+  subroutine set_element_length_to_fstat_at_gauss( fstrSOLID,hecMESH,icel,ig )
 
     use m_static_LIB_3d
     implicit none
@@ -3514,8 +3517,15 @@ end function fstr_setup_INITIAL
     enddo
 
     vol = VOLUME_C3( ic_type, NN,XX,YY,ZZ)
-    fstrSOLID%elements(icel)%gausses(ig)%fstatus(14) = vol
+    !
+    if     ( ( ic_type == 341 ).or.( ic_type == 342 ) )  then
+      fstrSOLID%elements(icel)%gausses(ig)%fstatus(16) = (12.d0*vol)**(1/3)
+    else if( ( ic_type == 361 ).or.( ic_type == 362 ) )  then
+      fstrSOLID%elements(icel)%gausses(ig)%fstatus(16) = (vol)**(1/3)
+    else
+      fstrSOLID%elements(icel)%gausses(ig)%fstatus(16) = 0.d0
+    endif
 
-  end subroutine set_element_volume_to_fstat_at_gauss
+  end subroutine set_element_length_to_fstat_at_gauss
 
 end module m_fstr_setup
