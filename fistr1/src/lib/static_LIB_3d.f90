@@ -679,7 +679,8 @@ contains
         gauss%stress(6) = dum(3,1) + dstress(6)
 
         if( mtype == USERMATERIAL ) then
-          call StressUpdate( gauss, D3, dstrain, gauss%stress )
+          !call StressUpdate( gauss, D3, dstrain, gauss%stress )
+          call StressUpdate( gauss, D3, dstrain, gauss%stress, time, tincr )
         else if( mtype == NORTON ) then
           !gauss%pMaterial%mtype = mtype
           if( tincr /= 0.0D0 .AND. any( gauss%stress /= 0.0D0 ) ) then
