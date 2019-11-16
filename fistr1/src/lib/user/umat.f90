@@ -55,7 +55,7 @@ contains
       EE     = matl(1)
       gf     = matl(4)
       damage = 1.d0-(eps0/epse)*exp(-1.d0*EE*eps0*(epse-eps0)/gf)
-      damage = min( damage,0.9995d0 )
+      damage = min( damage,0.9999d0 )
     else
       damage = 0.d0
     endif
@@ -107,7 +107,7 @@ contains
     real(kind=kreal) :: damage
 
     call calc_elastic_matrix( matl, D )
-    call calc_equivalent_strain( matl, strain, fstat(7), epse )
+    call calc_equivalent_strain( matl, strain, fstat(13), epse )
     call calc_damage( matl,epse,damage )
 
     D(:,:) = (1.d0-damage)*D(:,:)
@@ -130,16 +130,36 @@ contains
     real(kind=kreal) :: epse
     real(kind=kreal) :: damage
 
+    !
+    ! fstat(1:6)  :: strain at current time (trial)
+    ! fstat(7:12) :: strain at previous time
+    ! fstat(13)   :: maximum equiv strain at current time (trial)
+    ! fstat(14)   :: maximum equiv strain at previous time
+    ! fstat(15)   :: previous time
+    !
+
+    !
+    ! update when time incremented
+    if( ttime-fstat(15) > 1e-8 ) then
+      fstat(7:12) = fstat(1:6)
+      fstat(14)  = fstat(13)
+      fstat(15)   = ttime
+    !
+    else
+      fstat(1:6) = fstat(7:12)
+      fstat(13)  = fstat(14)
+    endif
+
     fstat(1:6) = fstat(1:6) + strain(:)
     !
     call calc_elastic_matrix( matl, D )
-    call calc_equivalent_strain( matl, fstat(1:6), fstat(7), epse )
+    call calc_equivalent_strain( matl, fstat(1:6), fstat(13), epse )
     call calc_damage( matl,epse,damage )
     !
     D(:,:) = (1.d0-damage)*D(:,:)
     !
-    stress   = matmul( D, fstat(1:6) )
-    fstat(7) = max( fstat(7), epse )
+    stress    = matmul( D, fstat(1:6) )
+    fstat(13) = epse
     !
   end subroutine
 
